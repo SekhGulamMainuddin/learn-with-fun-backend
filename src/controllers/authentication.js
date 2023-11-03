@@ -25,14 +25,14 @@ const getOTP = async (req, res) => {
 const verifyOTP = async (req, res) => {
   const { countryCode, phoneNumber, otp } = req.body;
   try {
-    const verifiedResponse = await client.verify.v2
+    await client.verify.v2
       .services(TWILIO_SERVICE_SID)
       .verificationChecks.create({
         to: `+${countryCode}${phoneNumber}`,
         code: otp,
       });
     const phone = { countryCode: countryCode, phoneNumber: phoneNumber };
-    const user = await User.findOne({ phone_number: phone });
+    const user = await User.findOne({ phone: phone });
     if (user != null) {
       const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY);
       const response = {

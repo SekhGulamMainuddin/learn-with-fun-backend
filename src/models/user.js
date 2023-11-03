@@ -45,7 +45,7 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-  coursesEnrolled: [String],
+  coursesEnrolled: [String]
 });
 
 const User = mongoose.model("User", userSchema);

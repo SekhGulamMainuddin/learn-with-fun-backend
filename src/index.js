@@ -2,11 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const mongoose= require("mongoose");
 const cors = require('cors');
-const authRouter = require('./routes/authentication');
-const userRouter = require('./routes/user');
 const app = express();
 const {PORT} = process.env;
 const port = 8000 || PORT;
+const authRouter = require('./routes/authentication');
+const userRouter = require('./routes/user');
+const courseRouter = require('./routes/course');
 
 
 mongoose.connect(process.env.MONGO_URL).then(()=>{
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(cors());
 app.use(authRouter);
 app.use(userRouter);
+app.use(courseRouter);
 
 app.get('/', (req, res) => {
     res.status(200).json({ message : "Hello Welcome to LearnWithFun Backend API"});
