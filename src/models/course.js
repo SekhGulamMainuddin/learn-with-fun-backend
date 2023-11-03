@@ -22,17 +22,43 @@ const courseSchema = mongoose.Schema({
   contents: [
     {
       video: {
-        videoUrl: {
+        title: {
           type: String,
           required: true,
         },
-        videoViewsIdList: [String],
-        videoLikesIdList: [String],
-        quiz: {
+        desc: {
           type: String,
-          defaultValue: null,
+          required: true,
         },
-        notesPdf: {
+        url: {
+          type: String,
+          required: true,
+        },
+        thumbnail: {
+          type: String,
+          required: true,
+        },
+        viewsIdList: [String],
+        likesIdList: [String],
+        quiz: [
+          {
+            question: {
+              type: String,
+              required: true,
+            },
+            options: [
+              {
+                type: String,
+                required: true,
+              },
+            ],
+            correctAns: {
+              type: Number,
+              required: true,
+            }
+          },
+        ],
+        notesPdfUrl: {
           type: String,
           defaultValue: null,
         },

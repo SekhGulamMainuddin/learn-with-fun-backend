@@ -23,11 +23,37 @@ const createCourse = async (req, res) => {
   }
 };
 
+const addCourseContent = async (req, res) => {
+  try {
+    const { courseId, title, desc, url, thumbnail, quiz, notesPdfUrl } =
+      req.body;
+      console.log(quiz);
+    let videoContent = {
+      video: {
+        title: title,
+        desc: desc,
+        url: url,
+        thumbnail: thumbnail,
+        viewsIdList: [],
+        likesIdList: [],
+        quiz: quiz,
+        notesPdfUrl: notesPdfUrl,
+      },
+    };
+    const course = await Course.findById(courseId);
+    course.contents.push(videoContent);
+    await course.save();
+    res.status(200).json({ message: "Content added Successfully" });
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
+};
+
 const addEnrollmentToCourse = async (req, res) => {
   try {
-    const { userId, courseId } = req.body;
+    const { courseId } = req.body;
     const [user, course] = await Promise.all([
-      User.findById(userId),
+      User.findById(req.user),
       Course.findById(courseId),
     ]);
     if (course == null) {
@@ -37,8 +63,8 @@ const addEnrollmentToCourse = async (req, res) => {
       if (!user.coursesEnrolled.includes(courseId)) {
         user.coursesEnrolled.push(courseId);
       }
-      if (!course.studentsEnrolled.studentsId.includes(userId)) {
-        course.studentsEnrolled.studentsId.push(userId);
+      if (!course.studentsEnrolled.studentsId.includes(req.user)) {
+        course.studentsEnrolled.studentsId.push(req.user);
         course.studentsEnrolled.totalCount++;
       }
       await Promise.all([user.save(), course.save()]);
@@ -51,4 +77,4 @@ const addEnrollmentToCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, addEnrollmentToCourse };
+module.exports = { createCourse, addCourseContent, addEnrollmentToCourse };
