@@ -5,6 +5,14 @@ const courseSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  courseDesc: {
+    type: String,
+    required: true,
+  },
+  courseThumbnail: {
+    type: String,
+    required: true,
+  },
   instructorId: {
     type: String,
     required: true,

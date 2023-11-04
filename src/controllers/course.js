@@ -3,11 +3,13 @@ const User = require("../models/user");
 
 const createCourse = async (req, res) => {
   try {
-    const { courseName, instructorId, price, tags } = req.body;
+    const { courseName, courseDesc, courseThumbnail, price, tags } = req.body;
 
     let course = new Course({
       courseName: courseName,
-      instructorId: instructorId,
+      courseDesc: courseDesc,
+      courseThumbnail: courseThumbnail,
+      instructorId: req.user,
       price: price,
       tags: tags,
       studentsEnrolled: {
@@ -17,7 +19,7 @@ const createCourse = async (req, res) => {
       contents: [],
     });
     course = await course.save();
-    let user = await User.findById(instructorId);
+    let user = await User.findById(req.user);
     user.courses.push(course._id);
     await user.save();
     res.status(201).json({ message: "Course saved successfully" });
