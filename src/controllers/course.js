@@ -16,7 +16,10 @@ const createCourse = async (req, res) => {
       },
       contents: [],
     });
-    await course.save();
+    course = await course.save();
+    let user = await User.findById(instructorId);
+    user.courses.push(course._id);
+    await user.save();
     res.status(201).json({ message: "Course saved successfully" });
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -27,18 +30,16 @@ const addCourseContent = async (req, res) => {
   try {
     const { courseId, title, desc, url, thumbnail, quiz, notesPdfUrl } =
       req.body;
-      console.log(quiz);
+    console.log(quiz);
     let videoContent = {
-      video: {
-        title: title,
-        desc: desc,
-        url: url,
-        thumbnail: thumbnail,
-        viewsIdList: [],
-        likesIdList: [],
-        quiz: quiz,
-        notesPdfUrl: notesPdfUrl,
-      },
+      title: title,
+      desc: desc,
+      url: url,
+      thumbnail: thumbnail,
+      viewsIdList: [],
+      likesIdList: [],
+      quiz: quiz,
+      notesPdfUrl: notesPdfUrl,
     };
     const course = await Course.findById(courseId);
     course.contents.push(videoContent);
@@ -60,8 +61,8 @@ const addEnrollmentToCourse = async (req, res) => {
       return res.status(404).json({ error: "Course Not Found" });
     }
     if (user) {
-      if (!user.coursesEnrolled.includes(courseId)) {
-        user.coursesEnrolled.push(courseId);
+      if (!user.courses.includes(courseId)) {
+        user.courses.push(courseId);
       }
       if (!course.studentsEnrolled.studentsId.includes(req.user)) {
         course.studentsEnrolled.studentsId.push(req.user);
@@ -77,4 +78,36 @@ const addEnrollmentToCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, addCourseContent, addEnrollmentToCourse };
+const getAllEnrolledCourses = async (req, res) => {
+  try {
+    const allCourses = await Course.find({
+      "studentsEnrolled.studentsId": req.user,
+    });
+    res.status(200).json(allCourses);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+const getAllCourses = async (req, res) => {
+  try {
+    const {page, limit, filters} = req.body;
+    let courses;
+    if(filters!=null && filters.length > 0) {
+      courses = await Course.find({tags : { "$in" : filters} }).skip(page * limit).limit(limit);
+    }else{
+      courses = await Course.find().skip(page * limit).limit(limit);
+    }
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  createCourse,
+  addCourseContent,
+  addEnrollmentToCourse,
+  getAllEnrolledCourses,
+  getAllCourses
+};

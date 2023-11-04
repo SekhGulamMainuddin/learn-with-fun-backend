@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
     countryCode: {
       type: Number,
       required: true,
-      unique: true,
+      unique: false,
       validate: {
         validator: Number.isInteger,
         message: "{VALUE} is not an integer value",
@@ -45,7 +45,7 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-  coursesEnrolled: [String]
+  courses: [String]
 });
 
 const User = mongoose.model("User", userSchema);
