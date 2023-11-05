@@ -3,8 +3,7 @@ const User = require("../models/user");
 
 const createCourse = async (req, res) => {
   try {
-    const { courseName, courseDesc, courseThumbnail, price, tags } = req.body;
-
+    const { courseName, courseDesc, courseThumbnail, price, tags, weekNumber } = req.body;
     let course = new Course({
       courseName: courseName,
       courseDesc: courseDesc,
@@ -17,6 +16,7 @@ const createCourse = async (req, res) => {
         studentsId: [],
       },
       contents: [],
+      weekNumber: weekNumber,
     });
     course = await course.save();
     let user = await User.findById(req.user);
@@ -24,13 +24,13 @@ const createCourse = async (req, res) => {
     await user.save();
     res.status(201).json({ message: "Course saved successfully" });
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
 const addCourseContent = async (req, res) => {
   try {
-    const { courseId, title, desc, url, thumbnail, quiz, notesPdfUrl } =
+    const { courseId, title, desc, url, thumbnail, notesPdfUrl } =
       req.body;
     console.log(quiz);
     let videoContent = {
@@ -40,7 +40,7 @@ const addCourseContent = async (req, res) => {
       thumbnail: thumbnail,
       viewsIdList: [],
       likesIdList: [],
-      quiz: quiz,
+      quiz: [],
       notesPdfUrl: notesPdfUrl,
     };
     const course = await Course.findById(courseId);
@@ -48,7 +48,7 @@ const addCourseContent = async (req, res) => {
     await course.save();
     res.status(200).json({ message: "Content added Successfully" });
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
@@ -93,12 +93,16 @@ const getAllEnrolledCourses = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
   try {
-    const {page, limit, filters} = req.body;
+    const { page, limit, filters } = req.body;
     let courses;
-    if(filters!=null && filters.length > 0) {
-      courses = await Course.find({tags : { "$in" : filters} }).skip(page * limit).limit(limit);
-    }else{
-      courses = await Course.find().skip(page * limit).limit(limit);
+    if (filters != null && filters.length > 0) {
+      courses = await Course.find({ tags: { $in: filters } })
+        .skip(page * limit)
+        .limit(limit);
+    } else {
+      courses = await Course.find()
+        .skip(page * limit)
+        .limit(limit);
     }
     res.status(200).json(courses);
   } catch (error) {
@@ -111,5 +115,5 @@ module.exports = {
   addCourseContent,
   addEnrollmentToCourse,
   getAllEnrolledCourses,
-  getAllCourses
+  getAllCourses,
 };

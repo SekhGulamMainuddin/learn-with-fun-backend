@@ -47,24 +47,7 @@ const courseSchema = mongoose.Schema({
       },
       viewsIdList: [String],
       likesIdList: [String],
-      quiz: [
-        {
-          question: {
-            type: String,
-            required: true,
-          },
-          options: [
-            {
-              type: String,
-              required: true,
-            },
-          ],
-          correctAns: {
-            type: Number,
-            required: true,
-          },
-        },
-      ],
+      quiz: [String],
       notesPdfUrl: {
         type: String,
         defaultValue: null,
@@ -72,6 +55,10 @@ const courseSchema = mongoose.Schema({
     },
   ],
   tags: [String],
+  weekNumber: {
+    type: Number,
+    required: true,
+  },
 });
 
 const Course = mongoose.model("Course", courseSchema);

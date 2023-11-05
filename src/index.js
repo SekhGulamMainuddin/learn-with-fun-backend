@@ -8,6 +8,7 @@ const port = 8000 || PORT;
 const authRouter = require('./routes/authentication');
 const userRouter = require('./routes/user');
 const courseRouter = require('./routes/course');
+const examRouter = require('./routes/exam');
 
 
 mongoose.connect(process.env.MONGO_URL).then(()=>{
@@ -21,6 +22,7 @@ app.use(cors());
 app.use(authRouter);
 app.use(userRouter);
 app.use(courseRouter);
+app.use(examRouter);
 
 app.get('/', (req, res) => {
     res.status(200).json({ message : "Hello Welcome to LearnWithFun Backend API"});
