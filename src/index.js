@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const auth = require("./middlewares/auth");
 const i18next = require("i18next");
-const Backend = require("i18next-node-fs-backend");
+const Backend = require("i18next-fs-backend");
 const i18nextMiddleware = require("i18next-http-middleware");
 
 i18next
