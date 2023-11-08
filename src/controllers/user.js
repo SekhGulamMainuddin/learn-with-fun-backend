@@ -104,4 +104,13 @@ const verifyMail = async (req, res) => {
   }
 };
 
-module.exports = { createUser, sendMail, verifyMail };
+const getUserDetails = async (req, res) => {
+  try {
+    const user = await User.findById(req.user);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports = { createUser, sendMail, verifyMail, getUserDetails };

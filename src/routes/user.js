@@ -1,8 +1,10 @@
 const express = require("express");
-const { createUser, sendMail, verifyMail } = require("../controllers/user");
+const auth = require("../middlewares/auth");
+const { createUser, sendMail, verifyMail, getUserDetails } = require("../controllers/user");
 const router = express.Router();
 
-router.post("/create-user", createUser);
+router.post("/user", createUser);
+router.get("/user", auth, getUserDetails);
 router.get("/send-mail", sendMail);
 router.post("/verify-mail", verifyMail);
 
