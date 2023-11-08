@@ -12,9 +12,6 @@ const createUser = async (req, res) => {
       countryCode: countryCode,
       phoneNumber: phoneNumber,
     };
-    if (!isEmailValid(email)) {
-      return res.status(400).json({ error: "Invalid email" });
-    }
     let user = new User({
       name,
       email,
@@ -24,6 +21,10 @@ const createUser = async (req, res) => {
       courses: [],
     });
     user = await user.save();
+    let emailVerification = await EmailVerification.findOne({ email });
+    emailVerification.verficationStatus = "VERIFIED";
+    emailVerification.userId = user._id;
+    await emailVerification.save();
     const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY);
     return res.status(201).json({
       token: token,
@@ -42,7 +43,9 @@ const sendMail = async (req, res) => {
       email: email,
     });
     if (alreadyPresentEmail != null && alreadyPresentEmail.userId.length > 0) {
-      return res.status(403).json({ message: "Email already taken by other user" });
+      return res
+        .status(403)
+        .json({ message: "Email already taken by other user" });
     }
     const verificationCode = Math.floor(100000 + Math.random() * 900000);
     const transporter = nodemailer.createTransport({
@@ -75,7 +78,7 @@ const sendMail = async (req, res) => {
       res.status(200).json({ message: `Email sent to ${email}` });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -84,18 +87,20 @@ const verifyMail = async (req, res) => {
     const { email, verificationCode } = req.body;
     let emailVerification = await EmailVerification.findOne({ email: email });
     if (emailVerification == null) {
-      res.status(400).json({ error: "Email not found for verification" });
+      res.status(404).json({ message: "Email not found for verification" });
     } else {
       if (emailVerification.verificationCode == verificationCode) {
         emailVerification.verificationStatus = "VERIFIED";
         await emailVerification.save();
         res.status(200).json({ message: "Email verification successful" });
       } else {
-        res.status(403).json({ error: "Wrong Verification Code. Email not verified" });
+        res
+          .status(403)
+          .json({ message: "Wrong Verification Code. Email not verified" });
       }
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
