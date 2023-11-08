@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const isEmailValid = require("../utils/utils");
 
 const userSchema = mongoose.Schema({
   name: {
@@ -10,9 +11,7 @@ const userSchema = mongoose.Schema({
     type: String,
     validate: {
       validator: (value) => {
-        const re =
-          /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-        return value.match(re);
+        return isEmailValid(value);
       },
       message: "Enter a valid email",
     },
@@ -34,8 +33,8 @@ const userSchema = mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ["STUDENT", "INSTRUCTOR"],
-    default: "STUDENT",
+    enum: ["LEARNER", "TEACHER"],
+    default: "LEARNER",
   },
   profilePicture: {
     type: String,
