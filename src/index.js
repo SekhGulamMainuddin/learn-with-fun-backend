@@ -44,7 +44,9 @@ app.use(courseRouter);
 app.use(examRouter);
 
 app.get("/", (req, res) => {
-  res.status(200).json({ message: req.t("welcomeToLearnWithFun") });
+  res
+    .status(200)
+    .json({ message: req.t('welcomeToLearnWithFun') });
 });
 
 app.listen(port, "0.0.0.0", () => {
