@@ -4,8 +4,8 @@ const { createUser, sendMail, verifyMail, getUserDetails } = require("../control
 const router = express.Router();
 
 router.post("/user", createUser);
-router.get("/user", auth, getUserDetails);
 router.get("/send-mail", sendMail);
 router.post("/verify-mail", verifyMail);
+router.get("/user", auth, getUserDetails);
 
 module.exports = router;

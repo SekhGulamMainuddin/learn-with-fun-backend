@@ -5,11 +5,11 @@ const examSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  quizId: {
+  quizContentId: {
     type: String,
     required: true,
   },
-  studentId: {
+  learnerId: {
     type: String,
     required: true,
   },

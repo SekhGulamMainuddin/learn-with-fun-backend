@@ -2,7 +2,8 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const EmailVerification = require("../models/email_verification");
-const isEmailValid = require("../utils/utils");
+const CourseCoverage = require("../models/course_coverage");
+const Course = require("../models/course");
 
 const createUser = async (req, res) => {
   try {
@@ -85,18 +86,24 @@ const sendMail = async (req, res) => {
 const verifyMail = async (req, res) => {
   try {
     const { email, verificationCode } = req.body;
-    let emailVerification = await EmailVerification.findOne({ email: email });
+    let emailVerification = await EmailVerification.findOne({
+      email: email,
+    });
     if (emailVerification == null) {
-      res.status(404).json({ message: "Email not found for verification" });
+      res.status(404).json({
+        message: "Email not found for verification",
+      });
     } else {
       if (emailVerification.verificationCode == verificationCode) {
         emailVerification.verificationStatus = "VERIFIED";
         await emailVerification.save();
-        res.status(200).json({ message: "Email verification successful" });
+        res.status(200).json({
+          message: "Email verification successful",
+        });
       } else {
-        res
-          .status(403)
-          .json({ message: "Wrong Verification Code. Email not verified" });
+        res.status(403).json({
+          message: "Wrong Verification Code. Email not verified",
+        });
       }
     }
   } catch (error) {
@@ -106,8 +113,28 @@ const verifyMail = async (req, res) => {
 
 const getUserDetails = async (req, res) => {
   try {
-    const user = await User.findById(req.user);
-    res.status(200).json(user);
+    const [user, course_coverage_list, courses] = await Promise.all([
+      User.findById(req.user),
+      CourseCoverage.find({ learnerId: req.user }),
+      Course.find({ "studentsEnrolled.studentsId": req.user }),
+    ]);
+    const enrolled_courses = [];
+    const course_coverage = new Map(
+      course_coverage_list.map((o) => [o.courseId, o.contentCovered.length])
+    );
+    for (let course of courses) {
+      enrolled_courses.push({
+        courseName: course.courseName,
+        courseId: course._id,
+        courseThumbnail: course.courseThumbnail,
+        courseCoverage: parseInt(
+          (course_coverage.get(course._id.toString()) /
+            course.contents.length) *
+            100
+        ),
+      });
+    }
+    res.status(200).json({ user, enrolled_courses });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

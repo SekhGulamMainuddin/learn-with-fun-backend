@@ -1,9 +1,10 @@
 const Course = require("../models/course");
 const User = require("../models/user");
+const CourseCoverage = require("../models/course_coverage");
 
 const createCourse = async (req, res) => {
   try {
-    const { courseName, courseDesc, courseThumbnail, price, tags, weekNumber } = req.body;
+    const { courseName, courseDesc, courseThumbnail, price, tags } = req.body;
     let course = new Course({
       courseName: courseName,
       courseDesc: courseDesc,
@@ -16,7 +17,6 @@ const createCourse = async (req, res) => {
         studentsId: [],
       },
       contents: [],
-      weekNumber: weekNumber,
     });
     course = await course.save();
     let user = await User.findById(req.user);
@@ -24,31 +24,31 @@ const createCourse = async (req, res) => {
     await user.save();
     res.status(201).json({ message: "Course saved successfully" });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
 const addCourseContent = async (req, res) => {
   try {
-    const { courseId, title, desc, url, thumbnail, notesPdfUrl } =
+    const { courseId, title, desc, url, thumbnail, notesPdfUrl, weekNumber } =
       req.body;
-    console.log(quiz);
     let videoContent = {
-      title: title,
-      desc: desc,
-      url: url,
-      thumbnail: thumbnail,
+      title,
+      desc,
+      url,
+      thumbnail,
       viewsIdList: [],
       likesIdList: [],
       quiz: [],
-      notesPdfUrl: notesPdfUrl,
+      notesPdfUrl,
+      weekNumber,
     };
     const course = await Course.findById(courseId);
     course.contents.push(videoContent);
     await course.save();
     res.status(200).json({ message: "Content added Successfully" });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -60,7 +60,7 @@ const addEnrollmentToCourse = async (req, res) => {
       Course.findById(courseId),
     ]);
     if (course == null) {
-      return res.status(404).json({ error: "Course Not Found" });
+      return res.status(404).json({ message: "Course Not Found" });
     }
     if (user) {
       if (!user.courses.includes(courseId)) {
@@ -70,13 +70,22 @@ const addEnrollmentToCourse = async (req, res) => {
         course.studentsEnrolled.studentsId.push(req.user);
         course.studentsEnrolled.totalCount++;
       }
-      await Promise.all([user.save(), course.save()]);
+      await Promise.all([
+        user.save(),
+        course.save(),
+        new CourseCoverage({
+          learnerId: req.user,
+          courseId: course._id,
+          contentCovered: [],
+          quizAttended: [],
+        }).save(),
+      ]);
       res.status(200).json({ message: "Course Enrolled Successfully" });
     } else {
-      res.status(404).json({ error: "User Not Found" });
+      res.status(404).json({ message: "User Not Found" });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -84,10 +93,10 @@ const getAllEnrolledCourses = async (req, res) => {
   try {
     const allCourses = await Course.find({
       "studentsEnrolled.studentsId": req.user,
-    });
+    }).select("courseName courseThumbnail instructorId ");
     res.status(200).json(allCourses);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -106,7 +115,31 @@ const getAllCourses = async (req, res) => {
     }
     res.status(200).json(courses);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const addQuiz = async (req, res) => {
+  try {
+    const { courseId, contentId, questions } = req.body;
+    let course = await Course.findById(courseId);
+    if (course == null) {
+      return res.status(404).json({ message: "Course Not Found" });
+    } else {
+      for (let i = 0; i < course.contents.length; i++) {
+        if (course.contents[i]._id.toString() === contentId) {
+          course.contents[i].quiz.push.apply(
+            course.contents[i].quiz,
+            questions
+          );
+          break;
+        }
+      }
+      await course.save();
+      res.status(200).json({ message: "Quiz Added Successfully", course });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -116,4 +149,5 @@ module.exports = {
   addEnrollmentToCourse,
   getAllEnrolledCourses,
   getAllCourses,
+  addQuiz,
 };

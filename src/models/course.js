@@ -47,18 +47,59 @@ const courseSchema = mongoose.Schema({
       },
       viewsIdList: [String],
       likesIdList: [String],
-      quiz: [String],
+      quiz: [
+        {
+          question: {
+            type: String,
+            required: true,
+          },
+          image: {
+            type: String,
+            default: null,
+          },
+          typeOfQuestion: {
+            type: String,
+            enum: ["TEXT", "IMAGE"],
+            default: "TEXT",
+          },
+          options: [
+            {
+              option: {
+                type: String,
+                required: true,
+              },
+              optionType: {
+                type: String,
+                enum: ["TEXT", "IMAGE"],
+                default: "TEXT",
+              },
+            },
+          ],
+          correctAns: {
+            type: Number,
+            required: true,
+          },
+          marks: {
+            type: Number,
+            required: true,
+          },
+          questionDesc: {
+            type: String,
+            default: null,
+          },
+        },
+      ],
       notesPdfUrl: {
         type: String,
         defaultValue: null,
       },
+      weekNumber: {
+        type: Number,
+        required: true,
+      },
     },
   ],
   tags: [String],
-  weekNumber: {
-    type: Number,
-    required: true,
-  },
 });
 
 const Course = mongoose.model("Course", courseSchema);

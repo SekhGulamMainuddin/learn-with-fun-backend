@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 
 const auth = async (req, res, next) => {
   try {
-    console.log(req.headers);
     const token = req.headers["authorization"];
     if (!token) return res.status(401).json({ msg: "No auth token found" });
 
@@ -14,7 +13,7 @@ const auth = async (req, res, next) => {
     req.token = bearerToken;
     next();
   } catch (e) {
-    res.status(403).json({ error: e.message });
+    res.status(401).json({ error: "Token not valid" });
   }
 };
 
