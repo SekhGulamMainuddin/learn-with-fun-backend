@@ -143,6 +143,46 @@ const addQuiz = async (req, res) => {
   }
 };
 
+const getRecommendedCourses = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    const user = await User.findById(req.user);
+    const recommendedCourses = await Course.find({
+      _id: { $nin: user.courses },
+      tags: { $in: tags },
+    })
+      .sort({ "studentsEnrolled.totalCount": -1 })
+      .select("courseName courseThumbnail")
+      .limit(5);
+    let course_fetch_earlier = recommendedCourses.map((course) => {
+      return course._id;
+    });
+    course_fetch_earlier.push(...user.courses);
+    const popularCourses = await Course.find({
+      _id: { $nin: course_fetch_earlier },
+    })
+      .sort({ "studentsEnrolled.totalCount": -1 })
+      .select("courseName courseThumbnail")
+      .limit(5);
+
+    const courses = [];
+    popularCourses.forEach((o) => {
+      var c = o.toObject();
+      c.tag = "Popular";
+      courses.push(c);
+    });
+    recommendedCourses.forEach((o) => {
+      var c = o.toObject();
+      c.tag = "Recommended";
+      courses.push(c);
+    });
+    
+    res.status(200).json({courses});
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createCourse,
   addCourseContent,
@@ -150,4 +190,5 @@ module.exports = {
   getAllEnrolledCourses,
   getAllCourses,
   addQuiz,
+  getRecommendedCourses,
 };
