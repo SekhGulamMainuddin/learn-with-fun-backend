@@ -40,7 +40,7 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-  courses: [String]
+  courses: [mongoose.Schema.Types.ObjectId]
 });
 
 const User = mongoose.model("User", userSchema);

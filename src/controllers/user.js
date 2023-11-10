@@ -122,19 +122,25 @@ const getUserDetails = async (req, res) => {
     const course_coverage = new Map(
       course_coverage_list.map((o) => [o.courseId, o.contentCovered.length])
     );
+    const instructors = new Map(
+      (
+        await Promise.all(
+          Array.from(courses.map((c) => User.findById(c.instructorId)))
+        )
+      ).map((o) => [o._id.toString(), o.name])
+    );
     for (let course of courses) {
       enrolled_courses.push({
         courseName: course.courseName,
         courseId: course._id,
         courseThumbnail: course.courseThumbnail,
-        courseCoverage: parseInt(
-          (course_coverage.get(course._id.toString()) /
-            course.contents.length) *
-            100
-        ),
+        instructorName: instructors.get(course.instructorId),
+        courseCoverage:
+          parseInt(course_coverage.get(course._id.toString())) || 0,
+        courseLength: course.contents.length,
       });
     }
-    res.status(200).json({ user, enrolled_courses });
+    res.status(200).json({ user, enrolled_courses});
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
