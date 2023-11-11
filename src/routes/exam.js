@@ -7,8 +7,8 @@ const {
   addScoreToAttendedQuestion,
 } = require("../controllers/exam");
 
-router.post("/attend-exam", auth, attendExam);
-router.post("/add-cheat-flag", auth, addCheatFlag);
-router.post("/add-score", auth, addScoreToAttendedQuestion);
+router.post("/exam/attend-exam", auth, attendExam);
+router.post("/exam/add-cheat-flag", auth, addCheatFlag);
+router.post("/exam/add-score", auth, addScoreToAttendedQuestion);
 
 module.exports = router;

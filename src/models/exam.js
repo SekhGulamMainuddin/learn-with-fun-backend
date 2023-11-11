@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const examSchema = mongoose.Schema({
   courseId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
   quizContentId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
   learnerId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
   examMaxScore: {
@@ -21,8 +22,8 @@ const examSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  correctAnswerQuestionIds: [String],
-  wrongAnswerQuestionIds: [String],
+  correctAnswerQuestionIds: [ObjectId],
+  wrongAnswerQuestionIds: [ObjectId],
   cheatFlags: [
     {
       flagType: {

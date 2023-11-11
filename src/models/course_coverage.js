@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const courseCoverageSchema = mongoose.Schema({
   learnerId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
   courseId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
-  contentCovered: [String],
+  contentCovered: [ObjectId],
   quizAttended: [
     {
       quizContentId: {
-        type: String,
+        type: ObjectId,
         required: true,
       },
       examId: {
-        type: String,
+        type: ObjectId,
         default: null,
       },
       lastAttendQuestionNumber: {

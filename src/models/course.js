@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const courseSchema = mongoose.Schema({
   courseName: {
@@ -14,14 +15,14 @@ const courseSchema = mongoose.Schema({
     required: true,
   },
   instructorId: {
-    type: String,
+    type: ObjectId,
     required: true,
   },
   studentsEnrolled: {
     totalCount: {
       type: Number,
     },
-    studentsId: [String],
+    studentsId: [ObjectId],
   },
   price: {
     type: Number,
@@ -45,8 +46,8 @@ const courseSchema = mongoose.Schema({
         type: String,
         required: true,
       },
-      viewsIdList: [String],
-      likesIdList: [String],
+      viewsIdList: [ObjectId],
+      likesIdList: [ObjectId],
       quiz: [
         {
           question: {
