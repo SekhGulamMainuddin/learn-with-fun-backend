@@ -9,14 +9,16 @@ const {
   getAllCourses,
   addQuiz,
   getRecommendedCourses,
+  getCourse
 } = require("../controllers/course");
 
-router.post("/course/create-course", auth, createCourse);
+router.post("/course", auth, createCourse);
 router.post("/course/add-enrollment-to-course", auth, addEnrollmentToCourse);
 router.post("/course/add-course-content", auth, addCourseContent);
 router.get("/course/get-all-enrolled-courses", auth, getAllEnrolledCourses);
 router.post("/course/get-all-courses", auth, getAllCourses);
-router.post("/course/get-recommended-courses", auth, getRecommendedCourses);
+router.get("/course/get-recommended-courses", auth, getRecommendedCourses);
 router.post("/course/add-quiz", addQuiz);
+router.get("/course", auth, getCourse);
 
 module.exports = router;

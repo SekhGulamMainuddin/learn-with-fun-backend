@@ -40,7 +40,8 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-  courses: [mongoose.Schema.Types.ObjectId]
+  courses: [mongoose.Schema.Types.ObjectId],
+  courseTags: [String]
 });
 
 const User = mongoose.model("User", userSchema);

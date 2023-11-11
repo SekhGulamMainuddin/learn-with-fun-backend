@@ -145,11 +145,10 @@ const addQuiz = async (req, res) => {
 
 const getRecommendedCourses = async (req, res) => {
   try {
-    const { tags } = req.body;
     const user = await User.findById(req.user);
     const recommendedCourses = await Course.find({
       _id: { $nin: user.courses },
-      tags: { $in: tags },
+      tags: { $in: user.courseTags },
     })
       .sort({ "studentsEnrolled.totalCount": -1 })
       .select("courseName courseThumbnail")
@@ -176,9 +175,27 @@ const getRecommendedCourses = async (req, res) => {
       c.tag = "Recommended";
       courses.push(c);
     });
-    
-    res.status(200).json({courses});
+
+    res.status(200).json(courses);
   } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const getCourse = async (req, res) => {
+  try {
+    const courseId = req.query.id;
+    let course = await Course.findById(courseId);
+    const instructor = await User.findById(course.instructorId);
+    if (course == null) {
+      res.status(404).json({ messgae: "Course not found" });
+    } else {
+      course = course.toObject();
+      course.instructorName = instructor.name;
+      res.status(200).json(course);
+    }
+  } catch (error) {
+    console.log(error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -191,4 +208,5 @@ module.exports = {
   getAllCourses,
   addQuiz,
   getRecommendedCourses,
+  getCourse,
 };
