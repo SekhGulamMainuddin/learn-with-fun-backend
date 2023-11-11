@@ -20,7 +20,7 @@ const courseCoverageSchema = mongoose.Schema({
         type: String,
         default: null,
       },
-      lastAttendQuestionNumber: {
+      lastAttendedQuestionNumber: {
         type: Number,
         default: null
       },

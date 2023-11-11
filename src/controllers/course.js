@@ -185,13 +185,48 @@ const getRecommendedCourses = async (req, res) => {
 const getCourse = async (req, res) => {
   try {
     const courseId = req.query.id;
-    let course = await Course.findById(courseId);
+    let [course, course_coverage] = await Promise.all([
+      Course.findById(courseId),
+      CourseCoverage.findOne({learnerId: req.user, courseId: courseId})
+    ]);
     const instructor = await User.findById(course.instructorId);
     if (course == null) {
       res.status(404).json({ messgae: "Course not found" });
     } else {
       course = course.toObject();
+      course.contents = course.contents.sort((a, b) =>
+        a.weekNumber > b.weekNumber ? 1 : b.weekNumber > a.weekNumber ? -1 : 0
+      );
       course.instructorName = instructor.name;
+      let weekMap = new Map();
+      for (let i = 0; i < course.contents.length; i++) {
+        const c = course.contents[i];
+        if (!weekMap.has(c.weekNumber)) {
+          weekMap.set(c.weekNumber, i);
+        }
+        const hours = getRandomInt(0, 1);
+        const minutes = getRandomInt(0, 59);
+        const seconds = getRandomInt(0, 59);
+        let duration = "";
+        if (hours != 0) {
+          duration += `${hours}h `;
+        }
+        if (minutes != 0) {
+          duration += `${minutes}m `;
+        }
+        if (seconds != 0) {
+          duration += `${hours}s`;
+        }
+        course.contents[i].courseDuration = duration;
+      }
+      course_coverage = course_coverage.toObject();
+      let quizAttendedMap = new Map();
+      course_coverage.quizAttended.forEach((e) => {
+        quizAttendedMap.set(e.quizContentId, e);
+      });
+      course_coverage.quizAttended = Object.fromEntries(quizAttendedMap);
+      course.weekMap = Object.fromEntries(weekMap);
+      course.courseCoverage = course_coverage;
       res.status(200).json(course);
     }
   } catch (error) {
@@ -199,6 +234,12 @@ const getCourse = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 module.exports = {
   createCourse,

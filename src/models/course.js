@@ -97,6 +97,7 @@ const courseSchema = mongoose.Schema({
         type: Number,
         required: true,
       },
+      courseDuration: String
     },
   ],
   tags: [String],

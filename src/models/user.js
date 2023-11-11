@@ -40,7 +40,7 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-  courses: [mongoose.Schema.Types.ObjectId],
+  courses: [String],
   courseTags: [String]
 });
 

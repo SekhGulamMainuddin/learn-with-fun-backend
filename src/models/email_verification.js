@@ -17,8 +17,8 @@ const emailVerificationSchema = mongoose.Schema({
     default: "PENDING",
   },
   userId: {
-    type: String,
-    default: "",
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
   }
 });
 
