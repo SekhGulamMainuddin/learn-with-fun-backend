@@ -38,7 +38,7 @@ const examSchema = mongoose.Schema({
       },
       image: {
         type: String,
-        required: true,
+        default: "",
       },
       dateTime: {
         type: Date,

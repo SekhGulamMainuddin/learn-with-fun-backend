@@ -1,6 +1,7 @@
 const Course = require("../models/course");
 const User = require("../models/user");
 const CourseCoverage = require("../models/course_coverage");
+const mongoose = require("mongoose");
 
 const createCourse = async (req, res) => {
   try {
@@ -100,20 +101,73 @@ const getAllEnrolledCourses = async (req, res) => {
   }
 };
 
-const getAllCourses = async (req, res) => {
+async function getCourses(filters, query, userId, page, limit) {
+  let courses;
+  if (filters != null && filters.length > 0) {
+    courses = await Course.find({
+      $and: [
+        {
+          $or: [
+            { courseName: new RegExp(query, "i") },
+            { tags: { $in: filters } },
+          ],
+        },
+        { "studentsEnrolled.studentsId": { $ne: userId } },
+      ],
+    })
+      .skip(page * limit)
+      .limit(limit);
+  } else {
+    courses = await Course.find({
+      $and: [
+        {
+          courseName: new RegExp(query, "i"),
+        },
+        { "studentsEnrolled.studentsId": { $ne: userId } },
+      ],
+    })
+      .skip(page * limit)
+      .limit(limit);
+  }
+  return courses;
+}
+
+const searchCoursesAndMentors = async (req, res) => {
   try {
-    const { page, limit, filters } = req.body;
-    let courses;
-    if (filters != null && filters.length > 0) {
-      courses = await Course.find({ tags: { $in: filters } })
+    const { page, limit, filters, query } = req.body;
+    let [users, courses] = await Promise.all([
+      User.find({
+        name: new RegExp(query, "i"),
+        userType: "TEACHER",
+      })
         .skip(page * limit)
-        .limit(limit);
-    } else {
-      courses = await Course.find()
-        .skip(page * limit)
-        .limit(limit);
-    }
-    res.status(200).json(courses);
+        .limit(limit),
+      getCourses(filters, query, req.user, page, limit),
+    ]);
+
+    const instructors = new Map(
+      (
+        await Promise.all(
+          Array.from(
+            courses.map((c) =>
+              User.findById(c.instructorId).select("name profilePicture")
+            )
+          )
+        )
+      ).map((o) => [o._id.toString(), o])
+    );
+    const courseList = [];
+    courses.forEach((c) => {
+      let course = c.toObject();
+      course.instructorName = instructors.get(c.instructorId).name;
+      course.instructorProfilePicture = instructors.get(
+        c.instructorId
+      ).profilePicture;
+      courseList.push(course);
+      delete course.contents;
+      course.lessons = c.contents.length;
+    });
+    res.status(200).json({ users, courseList });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -187,7 +241,7 @@ const getCourse = async (req, res) => {
     const courseId = req.query.id;
     let [course, course_coverage] = await Promise.all([
       Course.findById(courseId),
-      CourseCoverage.findOne({learnerId: req.user, courseId: courseId})
+      CourseCoverage.findOne({ learnerId: req.user, courseId: courseId }),
     ]);
     const instructor = await User.findById(course.instructorId);
     if (course == null) {
@@ -219,14 +273,16 @@ const getCourse = async (req, res) => {
         }
         course.contents[i].courseDuration = duration;
       }
-      course_coverage = course_coverage.toObject();
-      let quizAttendedMap = new Map();
-      course_coverage.quizAttended.forEach((e) => {
-        quizAttendedMap.set(e.quizContentId, e);
-      });
-      course_coverage.quizAttended = Object.fromEntries(quizAttendedMap);
-      course.weekMap = Object.fromEntries(weekMap);
+      if (course_coverage != null) {
+        course_coverage = course_coverage.toObject();
+        let quizAttendedMap = new Map();
+        course_coverage.quizAttended.forEach((e) => {
+          quizAttendedMap.set(e.quizContentId, e);
+        });
+        course_coverage.quizAttended = Object.fromEntries(quizAttendedMap);
+      }
       course.courseCoverage = course_coverage;
+      course.weekMap = Object.fromEntries(weekMap);
       res.status(200).json(course);
     }
   } catch (error) {
@@ -246,7 +302,7 @@ module.exports = {
   addCourseContent,
   addEnrollmentToCourse,
   getAllEnrolledCourses,
-  getAllCourses,
+  searchCoursesAndMentors,
   addQuiz,
   getRecommendedCourses,
   getCourse,

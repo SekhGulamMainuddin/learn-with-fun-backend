@@ -5,7 +5,7 @@ const attendExam = async (req, res) => {
   try {
     const { courseId, quizContentId, examMaxScore } = req.body;
     let [exam, courseCoverage] = await Promise.all([
-      (new Exam({
+      new Exam({
         courseId,
         quizContentId,
         learnerId: req.user,
@@ -15,9 +15,9 @@ const attendExam = async (req, res) => {
         wrongAnswerQuestionIds: [],
         cheatFlags: [],
         examStatus: "PENDING",
-      })).save(),
-      CourseCoverage.findOneBy({
-        leanerId: req.user,
+      }).save(),
+      CourseCoverage.findOne({
+        learnerId: req.user,
         courseId: courseId,
       }),
     ]);
@@ -38,6 +38,7 @@ const addCheatFlag = async (req, res) => {
   try {
     const { examId, cheatFlag } = req.body;
     const exam = await Exam.findById(examId);
+    cheatFlag.dateTime = new Date(cheatFlag.dateTime);
     exam.cheatFlags.push(cheatFlag);
     await exam.save();
     res.status(200).json({ message: "Cheat Flag Added" });
@@ -48,16 +49,26 @@ const addCheatFlag = async (req, res) => {
 
 const addScoreToAttendedQuestion = async (req, res) => {
   try {
-    const { examId, questionId, questionNumber, maximumMarks, isCorrect, isLast } = req.body;
+    const {
+      courseId,
+      examId,
+      isCorrect,
+      isLast,
+      maximumMarks,
+      questionId,
+      questionNumber,
+    } = req.body;
     let [exam, courseCoverage] = await Promise.all([
       Exam.findById(examId),
-      CourseCoverage.findOneBy({
-        leanerId: req.user,
+      CourseCoverage.findOne({
+        learnerId: req.user,
         courseId: courseId,
       }),
     ]);
-    let quizAttended = courseCoverage.quizAttended.find(o => o.examId === examId);
-    quizAttended.lastAttendQuestionNumber = questionNumber;
+    let quizAttended = courseCoverage.quizAttended.find(
+      (o) => o.examId === examId
+    );
+    quizAttended.lastAttendedQuestionNumber = questionNumber;
     if (isCorrect) {
       exam.correctAnswerQuestionIds.push(questionId);
       exam.examMarksScored += maximumMarks;
@@ -68,8 +79,8 @@ const addScoreToAttendedQuestion = async (req, res) => {
       exam.examStatus = "COMPLETED";
       quizAttended.quizCompleted = true;
     }
-    for(let i = 0; i < courseCoverage.quizAttended.length; i++) {
-      if(courseCoverage.quizAttended[i].examId === examId) {
+    for (let i = 0; i < courseCoverage.quizAttended.length; i++) {
+      if (courseCoverage.quizAttended[i].examId === examId) {
         courseCoverage.quizAttended[i] = quizAttended;
         break;
       }
@@ -78,6 +89,7 @@ const addScoreToAttendedQuestion = async (req, res) => {
     const message = isLast ? "Exam Submitted Successfully" : "Answer Saved";
     res.status(200).json({ message: message });
   } catch (error) {
+    console.log(error.message);
     res.status(400).json({ message: error.message });
   }
 };
