@@ -1,7 +1,6 @@
 const Course = require("../models/course");
 const User = require("../models/user");
 const CourseCoverage = require("../models/course_coverage");
-const mongoose = require("mongoose");
 
 const createCourse = async (req, res) => {
   try {
