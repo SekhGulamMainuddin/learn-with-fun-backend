@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const auth = require("./middlewares/auth");
 const i18next = require("i18next");
 const Backend = require("i18next-fs-backend");
 const i18nextMiddleware = require("i18next-http-middleware");
@@ -25,6 +24,7 @@ const authRouter = require("./routes/authentication");
 const userRouter = require("./routes/user");
 const courseRouter = require("./routes/course");
 const examRouter = require("./routes/exam");
+const paymentRouter = require("./routes/payment");
 
 mongoose
   .connect(process.env.MONGO_URL)
@@ -42,11 +42,10 @@ app.use(authRouter);
 app.use(userRouter);
 app.use(courseRouter);
 app.use(examRouter);
+app.use(paymentRouter);
 
 app.get("/", (req, res) => {
-  res
-    .status(200)
-    .json({ message: req.t('welcomeToLearnWithFun') });
+  res.status(200).json({ message: req.t("welcomeToLearnWithFun") });
 });
 
 app.listen(port, "0.0.0.0", () => {
