@@ -29,7 +29,11 @@ const courseSchema = mongoose.Schema({
   },
   discount: {
     type: Number,
-    default: 0.0,
+    default: 10.0,
+  },
+  ratings: {
+    type: Number,
+    default: 4.2,
   },
   likesIdList: [String],
   contents: [
@@ -44,7 +48,7 @@ const courseSchema = mongoose.Schema({
       },
       url: {
         type: String,
-        required: true,
+        default: null,
       },
       thumbnail: {
         type: String,

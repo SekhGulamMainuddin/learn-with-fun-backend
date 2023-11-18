@@ -192,7 +192,7 @@ const addQuiz = async (req, res) => {
       res.status(200).json({ message: "Quiz Added Successfully", course });
     }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error });
   }
 };
 

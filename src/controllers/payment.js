@@ -1,6 +1,7 @@
 const Payment = require("../models/payment");
 const Course = require("../models/course");
 const User = require("../models/user");
+const CourseCoverage = require("../models/course_coverage");
 const braintree = require("braintree");
 
 const gateway = new braintree.BraintreeGateway({
@@ -45,7 +46,17 @@ const verifyPayment = async (req, res) => {
       user.courses.push(course._id);
       course.studentsEnrolled.studentsId.push(req.user);
       course.studentsEnrolled.totalCount++;
-      await Promise.all([user.save(), course.save(), payment.save()]);
+      await Promise.all([
+        user.save(),
+        course.save(),
+        payment.save(),
+        new CourseCoverage({
+          learnerId: req.user,
+          courseId: course._id,
+          contentCovered: [],
+          quizAttended: [],
+        }).save(),
+      ]);
       res.status(200).json({ message: "Course Enrolled Successfully" });
     } else {
       res.status(400).json({ message: "Payment Failed" });
