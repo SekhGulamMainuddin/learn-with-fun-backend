@@ -41,7 +41,22 @@ const userSchema = mongoose.Schema({
     default: null,
   },
   courses: [String],
-  courseTags: [String]
+  courseTags: [String],
+  activity: {
+    type: Map,
+    of: Number,
+    default: new Map(),
+  },
+  videoActivity: {
+    type: Map,
+    of: Number,
+    default: new Map(),
+  },
+  quizActivity: {
+    type: Map,
+    of: Number,
+    default: new Map(),
+  }
 });
 
 const User = mongoose.model("User", userSchema);

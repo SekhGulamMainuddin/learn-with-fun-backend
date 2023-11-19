@@ -106,6 +106,8 @@ const getExamStats = async (req, res) => {
     examsGiven.forEach((e) => {
       examCheatContentIdMap.set(e.quizContentId, {
         quizTitle: "Quiz",
+        courseName: "Course",
+        courseId: "",
         cheatFlags: e.cheatFlags,
       });
       if (e.examStatus == "COMPLETED") {
@@ -132,15 +134,14 @@ const getExamStats = async (req, res) => {
       if (quizAttendedForCourseMap.has(e.courseId)) {
         let q = quizAttendedForCourseMap.get(e.courseId);
         q.totalQuizAttended++;
+        if (totalNumberOfQuiz > 0) {
+          q.quizAttendedPercentage =
+            (q.totalQuizAttended.toFixed(2) / q.totalNumberOfQuiz.toFixed(2)) * 100.0;
+        }
         quizAttendedForCourseMap.set(e.courseId, q);
       } else {
         let totalNumberOfQuiz = 0;
         course.contents.forEach(function (content, i) {
-          if (examCheatContentIdMap.has(content._id.toString())) {
-            let v = examCheatContentIdMap.get(content._id.toString());
-            v.quizTitle = `Quiz ${i + 1} ${content.title}`;
-            examCheatContentIdMap.set(content._id, v);
-          }
           if (content.quiz != null && content.quiz.length > 0) {
             totalNumberOfQuiz++;
           }
@@ -149,33 +150,31 @@ const getExamStats = async (req, res) => {
         if (e.examStatus == "COMPLETED") {
           totalQuizAttended++;
         }
+        let quizAttendedPercentage = 0.0;
+        if (totalNumberOfQuiz > 0) {
+          quizAttendedPercentage =
+            (totalQuizAttended.toFixed(2) / totalNumberOfQuiz.toFixed(2)) * 100.0;
+        }
         quizAttendedForCourseMap.set(e.courseId, {
           totalNumberOfQuiz,
           totalQuizAttended,
+          quizAttendedPercentage,
+          courseName: course.courseName,
+          courseDesc: course.courseDesc,
+          courseThumbnail: course.courseThumbnail,
+          courseId: course._id.toString(),
         });
       }
     });
 
-    const cheatFlags = Object.fromEntries(examCheatContentIdMap);
-    quizAttendedForCourseMap = Object.fromEntries(quizAttendedForCourseMap);
-    let courseNameDescMap = new Map();
-    courseMap.forEach((c) => {
-      courseNameDescMap.set(c._id, {
-        courseName: c.courseName,
-        courseDesc: c.courseDesc,
-        courseThumbnail: c.courseThumbnail,
-      });
-    });
-    courseNameDescMap = Object.fromEntries(courseNameDescMap);
+    quizAttendedForCourseMap = Array.from(quizAttendedForCourseMap).map(
+      ([key, value]) => value
+    );
 
-    res
-      .status(200)
-      .json({
-        overallPercentage,
-        quizAttendedForCourseMap,
-        cheatFlags,
-        courseNameDescMap,
-      });
+    res.status(200).json({
+      overallPercentage,
+      quizAttendedList: quizAttendedForCourseMap,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

@@ -140,10 +140,56 @@ const getUserDetails = async (req, res) => {
         courseLength: course.contents.length,
       });
     }
-    res.status(200).json({ user, enrolled_courses});
+    res.status(200).json({ user, enrolled_courses });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-module.exports = { createUser, sendMail, verifyMail, getUserDetails };
+const updateActivity = async (req, res) => {
+  try {
+    let { type, date, time } = req.body;
+    const user = await User.findById(req.user);
+    updateDate(user, date, time, type);
+    await user.save();
+    res.status(200).json({ message: "Activity saved successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+function updateDate(user, date, time, type) {
+  if (type === "Video") {
+    if (user.videoActivity.has(date)) {
+      let previousActivity = user.videoActivity.get(date);
+      previousActivity += time;
+      user.videoActivity.set(date, previousActivity);
+    } else {
+      user.videoActivity.set(date, time);
+    }
+  } else if (type === "Quiz") {
+    if (user.quizActivity.has(date)) {
+      let previousActivity = user.quizActivity.get(date);
+      previousActivity += time;
+      user.quizActivity.set(date, previousActivity);
+    } else {
+      user.quizActivity.set(date, time);
+    }
+  } else {
+    if (user.activity.has(date)) {
+      let previousActivity = user.activity.get(date);
+      previousActivity += time;
+      user.activity.set(date, previousActivity);
+    } else {
+      user.activity.set(date, time);
+    }
+  }
+}
+
+module.exports = {
+  createUser,
+  sendMail,
+  verifyMail,
+  getUserDetails,
+  updateActivity,
+};
