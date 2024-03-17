@@ -1,6 +1,7 @@
 const Course = require("../models/course");
 const User = require("../models/user");
 const CourseCoverage = require("../models/course_coverage");
+const { getVideoDurationInSeconds } = require('get-video-duration');
 
 const createCourse = async (req, res) => {
   try {
@@ -30,8 +31,14 @@ const createCourse = async (req, res) => {
 
 const addCourseContent = async (req, res) => {
   try {
-    const { courseId, title, desc, url, thumbnail, notesPdfUrl, weekNumber } =
+    let { courseId, title, desc, url, contentDuration, thumbnail, notesPdfUrl, weekNumber } =
       req.body;
+      if(contentDuration == null && url != null) {
+        const videoDuration = await getVideoDurationInSeconds(
+          url
+        );
+        contentDuration = Math.round(videoDuration * 1000);
+      }
     let videoContent = {
       title,
       desc,
@@ -42,11 +49,12 @@ const addCourseContent = async (req, res) => {
       quiz: [],
       notesPdfUrl,
       weekNumber,
+      contentDuration
     };
     const course = await Course.findById(courseId);
     course.contents.push(videoContent);
     await course.save();
-    res.status(200).json({ message: "Content added Successfully" });
+    res.status(200).json({ course: course, message: "Content added Successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -257,20 +265,6 @@ const getCourse = async (req, res) => {
         if (!weekMap.has(c.weekNumber)) {
           weekMap.set(c.weekNumber, i);
         }
-        const hours = getRandomInt(0, 1);
-        const minutes = getRandomInt(0, 59);
-        const seconds = getRandomInt(0, 59);
-        let duration = "";
-        if (hours != 0) {
-          duration += `${hours}h `;
-        }
-        if (minutes != 0) {
-          duration += `${minutes}m `;
-        }
-        if (seconds != 0) {
-          duration += `${hours}s`;
-        }
-        course.contents[i].courseDuration = duration;
       }
       if (course_coverage != null) {
         course_coverage = course_coverage.toObject();

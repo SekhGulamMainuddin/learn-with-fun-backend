@@ -106,7 +106,11 @@ const courseSchema = mongoose.Schema({
         type: Number,
         required: true,
       },
-      courseDuration: String
+      contentDuration: {
+        type: Number,
+        defaultValue:null,
+        required: false,
+      }
     },
   ],
   tags: [String],
