@@ -22,7 +22,7 @@ const createCourse = async (req, res) => {
     let user = await User.findById(req.user);
     user.courses.push(course._id);
     await user.save();
-    res.status(201).json({ message: "Course saved successfully" });
+    res.status(201).json({ courseId: course._id, message: "Course saved successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
