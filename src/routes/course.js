@@ -18,7 +18,7 @@ router.post("/course/add-course-content", auth, addCourseContent);
 router.get("/course/get-all-enrolled-courses", auth, getAllEnrolledCourses);
 router.post("/course/search-courses-mentors", auth, searchCoursesAndMentors);
 router.get("/course/get-recommended-courses", auth, getRecommendedCourses);
-router.post("/course/add-quiz", addQuiz);
+router.post("/course/add-quiz", auth, addQuiz);
 router.get("/course", auth, getCourse);
 
 module.exports = router;
