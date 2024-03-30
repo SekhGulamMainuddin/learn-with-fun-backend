@@ -31,7 +31,7 @@ const attendExam = async (req, res) => {
     await courseCoverage.save();
     res.status(200).json({ message: "Can attend the exam", examId: exam._id });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+        res.status(400).json({ message: error.message });
   }
 };
 
@@ -134,7 +134,7 @@ const getExamStats = async (req, res) => {
       if (quizAttendedForCourseMap.has(e.courseId)) {
         let q = quizAttendedForCourseMap.get(e.courseId);
         q.totalQuizAttended++;
-        if (totalNumberOfQuiz > 0) {
+        if (q.totalNumberOfQuiz > 0) {
           q.quizAttendedPercentage =
             (q.totalQuizAttended.toFixed(2) / q.totalNumberOfQuiz.toFixed(2)) * 100.0;
         }

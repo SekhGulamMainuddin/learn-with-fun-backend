@@ -42,6 +42,7 @@ const examSchema = mongoose.Schema({
       },
       dateTime: {
         type: Date,
+        unique: false,
         required: true,
       },
     },

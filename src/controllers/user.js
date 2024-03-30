@@ -127,7 +127,7 @@ const getUserDetails = async (req, res) => {
         await Promise.all(
           Array.from(courses.map((c) => User.findById(c.instructorId)))
         )
-      ).map((o) => [o._id.toString(), o.name])
+      ).map((o) => o!=null ? [o._id.toString(), o.name] : [])
     );
     for (let course of courses) {
       enrolled_courses.push({
